@@ -76,33 +76,33 @@ func NewReader(r io.Reader, lazySamples bool) (*Reader, error) {
 		}
 
 		if LineNumber == 1 {
-			v, err := parseHeaderFileVersion(line)
+			v, err := ParseHeaderFileVersion(line)
 			verr.Add(err, LineNumber)
 			h.FileFormat = v
 
 		} else if strings.HasPrefix(line, "##FORMAT") {
-			format, err := parseHeaderFormat(line)
+			format, err := ParseHeaderFormat(line)
 			verr.Add(err, LineNumber)
 			if format != nil {
 				h.SampleFormats[format.Id] = format
 			}
 
 		} else if strings.HasPrefix(line, "##INFO") {
-			info, err := parseHeaderInfo(line)
+			info, err := ParseHeaderInfo(line)
 			verr.Add(err, LineNumber)
 			if info != nil {
 				h.Infos[info.Id] = info
 			}
 
 		} else if strings.HasPrefix(line, "##FILTER") {
-			filter, err := parseHeaderFilter(line)
+			filter, err := ParseHeaderFilter(line)
 			verr.Add(err, LineNumber)
 			if filter != nil && len(filter) == 2 {
 				h.Filters[filter[0]] = filter[1]
 			}
 
 		} else if strings.HasPrefix(line, "##contig") {
-			contig, err := parseHeaderContig(line)
+			contig, err := ParseHeaderContig(line)
 			verr.Add(err, LineNumber)
 			if contig != nil {
 				if _, ok := contig["ID"]; ok {
@@ -112,7 +112,7 @@ func NewReader(r io.Reader, lazySamples bool) (*Reader, error) {
 				}
 			}
 		} else if strings.HasPrefix(line, "##SAMPLE") {
-			sample, err := parseHeaderSample(line)
+			sample, err := ParseHeaderSample(line)
 			verr.Add(err, LineNumber)
 			if sample != "" {
 				h.Samples[sample] = line
@@ -122,7 +122,7 @@ func NewReader(r io.Reader, lazySamples bool) (*Reader, error) {
 		} else if strings.HasPrefix(line, "##PEDIGREE") {
 			h.Pedigrees = append(h.Pedigrees, line)
 		} else if strings.HasPrefix(line, "##") {
-			kv, err := parseHeaderExtraKV(line)
+			kv, err := ParseHeaderExtraKV(line)
 			verr.Add(err, LineNumber)
 
 			if kv != nil && len(kv) == 2 {
@@ -131,7 +131,7 @@ func NewReader(r io.Reader, lazySamples bool) (*Reader, error) {
 
 		} else if strings.HasPrefix(line, "#CHROM") {
 			var err error
-			h.SampleNames, err = parseSampleLine(line)
+			h.SampleNames, err = ParseSampleLine(line)
 			verr.Add(err, LineNumber)
 			//h.Validate(verr)
 			break
@@ -241,7 +241,7 @@ func (h *Header) ParseSamples(v *Variant) error {
 	v.Samples = make([]*SampleGenotype, len(h.SampleNames))
 
 	for i, sample := range strings.Split(v.sampleString, "\t") {
-		geno, moreErrors := h.parseSample(v.Format, sample)
+		geno, moreErrors := h.ParseSample(v.Format, sample)
 		errors = append(errors, moreErrors...)
 
 		v.Samples[i] = geno

@@ -265,7 +265,7 @@ func (i InfoByte) Get(key string) (interface{}, error) {
 	var err error
 	var iv interface{}
 	if hi.Number == "1" || (hi.Number == "." && strings.IndexByte(v, ',') == -1) {
-		return parseOne(skey, v, hi.Type)
+		return ParseOne(skey, v, hi.Type)
 	}
 
 	switch hi.Number {
@@ -283,13 +283,13 @@ func (i InfoByte) Get(key string) (interface{}, error) {
 		case "Integer":
 			vi = make([]int, len(vals))
 			for j, val := range vals {
-				iv, err = parseOne(skey, val, hi.Type)
+				iv, err = ParseOne(skey, val, hi.Type)
 				vi.([]int)[j] = iv.(int)
 			}
 		case "Float":
 			vi = make([]float32, len(vals))
 			for j, val := range vals {
-				iv, err = parseOne(skey, val, hi.Type)
+				iv, err = ParseOne(skey, val, hi.Type)
 				if o, ok := iv.(float32); ok {
 					vi.([]float32)[j] = o
 				} else {
@@ -300,13 +300,13 @@ func (i InfoByte) Get(key string) (interface{}, error) {
 		case "String":
 			vi = make([]string, len(vals))
 			for j, val := range vals {
-				iv, err = parseOne(skey, val, hi.Type)
+				iv, err = ParseOne(skey, val, hi.Type)
 				vi.([]string)[j] = iv.(string)
 			}
 		default:
 			vi = make([]interface{}, len(vals))
 			for j, val := range vals {
-				iv, err = parseOne(skey, val, hi.Type)
+				iv, err = ParseOne(skey, val, hi.Type)
 				vi.([]interface{})[j] = iv
 			}
 		}
@@ -317,7 +317,7 @@ func (i InfoByte) Get(key string) (interface{}, error) {
 		var vi interface{} = make([]interface{}, len(vals))
 		if _, err := strconv.Atoi(hi.Number); err == nil {
 			for j, val := range vals {
-				iv, err = parseOne(skey, val, hi.Type)
+				iv, err = ParseOne(skey, val, hi.Type)
 				vi.([]interface{})[j] = iv
 			}
 		}

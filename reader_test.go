@@ -5,7 +5,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/brentp/vcfgo"
+	//vcfgo "github.com/brentp/vcfgo"
+	"realDcaller2/third_party/vcfgo"
 
 	. "gopkg.in/check.v1"
 )

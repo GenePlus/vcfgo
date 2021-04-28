@@ -66,7 +66,7 @@ func (h *Header) Validate(verr *VCFError) []error {
 	return errs
 }*/
 
-func (h *Header) parseSample(format []string, s string) (*SampleGenotype, []error) {
+func (h *Header) ParseSample(format []string, s string) (*SampleGenotype, []error) {
 	values := strings.Split(s, ":")
 	if len(format) != len(values) {
 		return NewSampleGenotype(), []error{fmt.Errorf("bad sample string: %s", s)}
@@ -192,7 +192,42 @@ func NewHeader() *Header {
 	return &h
 }
 
-func parseHeaderInfo(info string) (*Info, error) {
+// GetFilter can replaced by ParseHeaderFilter with First character upper.
+func (h *Header) GetFilter(id string, des string) {
+	h.Filters[id] = des
+}
+
+// GetInfo ParseHeaderInfo
+func (h *Header) GetInfo(id string, num string, t string, des string) {
+	h.Infos[id] = &Info{Id: id, Number: num, Type: t, Description: des}
+}
+
+func (h *Header) GetContig(contigStr string) {
+	contigs := strings.Split(contigStr, "\n\t")
+	for _, contig := range contigs {
+		c, _ := ParseHeaderContig(contig)
+		h.Contigs = append(h.Contigs, c)
+	}
+}
+
+func ParseHeaderFileVersion(format string) (string, error) {
+	res := fileVersionRegexp.FindStringSubmatch(format)
+	if len(res) != 2 {
+		return "-1", fmt.Errorf("file format error: %s", format)
+	}
+
+	return res[1], nil
+}
+
+func ParseHeaderFilter(info string) ([]string, error) {
+	res := filterRegexp.FindStringSubmatch(info)
+	if len(res) != 3 {
+		return nil, fmt.Errorf("FILTER error: %s", info)
+	}
+	return res[1:3], nil
+}
+
+func ParseHeaderInfo(info string) (*Info, error) {
 	res := infoRegexp.FindStringSubmatch(info)
 	if len(res) != 5 {
 		return nil, fmt.Errorf("INFO error: %s, %v", info, res)
@@ -205,7 +240,20 @@ func parseHeaderInfo(info string) (*Info, error) {
 	return &i, nil
 }
 
-func parseHeaderContig(contig string) (map[string]string, error) {
+func ParseHeaderFormat(info string) (*SampleFormat, error) {
+	res := formatRegexp.FindStringSubmatch(info)
+	if len(res) != 5 {
+		return nil, fmt.Errorf("FORMAT error: %s", info)
+	}
+	var i SampleFormat
+	i.Id = res[1]
+	i.Number = res[2]
+	i.Type = res[3]
+	i.Description = res[4]
+	return &i, nil
+}
+
+func ParseHeaderContig(contig string) (map[string]string, error) {
 	vmap := make(map[string]string)
 	contig = strings.TrimSuffix(strings.TrimPrefix(contig, "##contig=<"), ">")
 	rdr := csv.NewReader(strings.NewReader(contig))
@@ -220,7 +268,7 @@ func parseHeaderContig(contig string) (map[string]string, error) {
 	return vmap, err
 }
 
-func parseHeaderExtraKV(kv string) ([]string, error) {
+func ParseHeaderExtraKV(kv string) ([]string, error) {
 	kv = strings.TrimLeft(kv, "##")
 	kv = strings.TrimLeft(kv, " ")
 	kvpair := strings.SplitN(kv, "=", 2)
@@ -231,29 +279,8 @@ func parseHeaderExtraKV(kv string) ([]string, error) {
 	return kvpair, nil
 }
 
-func parseHeaderFormat(info string) (*SampleFormat, error) {
-	res := formatRegexp.FindStringSubmatch(info)
-	if len(res) != 5 {
-		return nil, fmt.Errorf("FORMAT error: %s", info)
-	}
-	var i SampleFormat
-	i.Id = res[1]
-	i.Number = res[2]
-	i.Type = res[3]
-	i.Description = res[4]
-	return &i, nil
-}
-
-func parseHeaderFilter(info string) ([]string, error) {
-	res := filterRegexp.FindStringSubmatch(info)
-	if len(res) != 3 {
-		return nil, fmt.Errorf("FILTER error: %s", info)
-	}
-	return res[1:3], nil
-}
-
 // return just the sample id.
-func parseHeaderSample(line string) (string, error) {
+func ParseHeaderSample(line string) (string, error) {
 	res := sampleRegexp.FindStringSubmatch(line)
 	if len(res) != 2 {
 		return "", fmt.Errorf("error parsing ##SAMPLE")
@@ -261,16 +288,7 @@ func parseHeaderSample(line string) (string, error) {
 	return res[1], nil
 }
 
-func parseHeaderFileVersion(format string) (string, error) {
-	res := fileVersionRegexp.FindStringSubmatch(format)
-	if len(res) != 2 {
-		return "-1", fmt.Errorf("file format error: %s", format)
-	}
-
-	return res[1], nil
-}
-
-func parseSampleLine(line string) ([]string, error) {
+func ParseSampleLine(line string) ([]string, error) {
 	fields := strings.Split(line, "\t")
 	var samples []string
 	if len(fields) > 9 {
@@ -281,7 +299,7 @@ func parseSampleLine(line string) ([]string, error) {
 	return samples, nil
 }
 
-func parseOne(key, val, itype string) (interface{}, error) {
+func ParseOne(key, val, itype string) (interface{}, error) {
 	var v interface{}
 	var err error
 	switch itype {

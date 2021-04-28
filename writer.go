@@ -78,6 +78,7 @@ func NewWriter(w io.Writer, h *Header) (*Writer, error) {
 	}
 
 	fmt.Fprint(w, "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT")
+	
 	var s string
 	if len(h.SampleNames) > 0 {
 		s = "\t" + strings.Join(h.SampleNames, "\t")

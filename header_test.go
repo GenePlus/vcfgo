@@ -6,7 +6,12 @@ import (
 	"strings"
 
 	"github.com/brentp/irelate/interfaces"
-	vcfgo "github.com/brentp/vcfgo"
+	"github.com/stretchr/testify/assert"
+
+	//vcfgo "github.com/brentp/vcfgo"
+	vcfgo "realDcaller2/third_party/vcfgo"
+
+	"testing"
 
 	. "gopkg.in/check.v1"
 )
@@ -211,3 +216,46 @@ func (s *VariantSuite) TestParseOne(c *C) {
 
 }
 */
+
+func TestParseHeaderFileVersion(t *testing.T) {
+	fileVersion := `##fileformat=VCFv4.2`
+	version, _ := vcfgo.ParseHeaderFileVersion(fileVersion)
+	assert.Equal(t, version, "4.2")
+}
+
+func TestHeaderGet(t *testing.T) {
+	h := vcfgo.NewHeader()
+	//filter map[string]string
+	h.GetFilter("TooBad", "The site consistent of too many low quality reads(besides 0 mapping quality, and low base quality) in both samples [{0}]")
+	assert.Equal(t, h.Filters["TooBad"], "The site consistent of too many low quality reads(besides 0 mapping quality, and low base quality) in both samples [{0}]")
+}
+
+func TestParseHeaderFormat(t *testing.T) {
+	h := vcfgo.NewHeader()
+	//format map[string]*SampleFormat map[string]*Info
+	h.SampleFormats["GT"], _ = vcfgo.ParseHeaderFormat(`##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype, may not be diploidy for both control and case sample">`)
+	assert.Equal(t, h.SampleFormats["GT"].Description, "Genotype, may not be diploidy for both control and case sample")
+}
+
+func TestParseHeaderContig(t *testing.T) {
+	h := vcfgo.NewHeader()
+	//contig []map[string]string
+	contig := `##contig=<ID=1,length=249250621>`
+	c, _ := vcfgo.ParseHeaderContig(contig)
+	assert.Equal(t, c["ID"], "1")
+	assert.Equal(t, c["length"], "249250621")
+	h.Contigs = append(h.Contigs, c)
+	assert.Equal(t, len(h.Contigs), 1)
+	assert.Equal(t, h.Contigs[0]["ID"], "1")
+}
+
+func TestGetContig(t *testing.T) {
+	h := vcfgo.NewHeader()
+	contigStr := `##contig=<ID=1,length=249250621>
+	##contig=<ID=2,length=243199373>`
+	h.GetContig(contigStr)
+	assert.Equal(t, len(h.Contigs), 2)
+	assert.Equal(t, h.Contigs[0]["ID"], "1")
+	assert.Equal(t, h.Contigs[0]["length"], "249250621")
+	assert.Equal(t, h.Contigs[1]["ID"], "2")
+}

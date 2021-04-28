@@ -28,6 +28,25 @@ type Variant struct {
 	LineNumber   int64
 }
 
+func NewVariant(chrom string, rp int, ref string, alts []string, qual float32, filter string, info interfaces.Info, format []string, sample string) (*Variant, error) {
+	return &Variant{
+		Chromosome: chrom,
+		Pos:        uint64(rp), //1-base
+		Id_:        ".",        //default
+		Reference:  ref,
+		Alternate:  alts,
+		Quality:    qual,
+		Filter:     filter,
+		Info_:      info,
+		Format:     format,
+		//Samples    []*SampleGenotype
+		// if lazy parsing, then just save the sample strings here.
+		sampleString: sample,
+		// Header       *Header
+		// LineNumber   int64
+	}, nil
+}
+
 func (v *Variant) Info() interfaces.Info {
 	return v.Info_
 }

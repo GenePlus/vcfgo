@@ -65,7 +65,7 @@ var samplelinetests = []struct {
 
 func (s *VCFSuite) TestHeaderInfoParse(c *C) {
 	for _, v := range infotests {
-		obs, err := parseHeaderInfo(v.input)
+		obs, err := ParseHeaderInfo(v.input)
 		c.Assert(err, IsNil)
 		c.Assert(obs, DeepEquals, v.exp)
 		c.Assert(obs.String(), Equals, v.input)
@@ -74,7 +74,7 @@ func (s *VCFSuite) TestHeaderInfoParse(c *C) {
 
 func (s *VCFSuite) TestHeaderFormatParse(c *C) {
 	for _, v := range formattests {
-		obs, err := parseHeaderFormat(v.input)
+		obs, err := ParseHeaderFormat(v.input)
 		c.Assert(err, IsNil)
 		c.Assert(obs, DeepEquals, v.exp)
 		c.Assert(obs.String(), Equals, v.input)
@@ -85,31 +85,31 @@ func (s *VCFSuite) TestHeaderFormatParse(c *C) {
 func (s *VCFSuite) TestHeaderFilterParse(c *C) {
 
 	for _, v := range filtertests {
-		obs, err := parseHeaderFilter(v.filter)
+		obs, err := ParseHeaderFilter(v.filter)
 		c.Assert(err, IsNil)
 		c.Assert(obs, DeepEquals, v.exp)
 	}
 }
 
 func (s *VCFSuite) TestHeaderVersionParse(c *C) {
-	obs, err := parseHeaderFileVersion(`##fileformat=VCFv4.2`)
+	obs, err := ParseHeaderFileVersion(`##fileformat=VCFv4.2`)
 	c.Assert(err, IsNil)
 	c.Assert(obs, Equals, "4.2")
 }
 
 func (s *VCFSuite) TestHeaderBadVersionParse(c *C) {
-	_, err := parseHeaderFileVersion(`##fileformat=VFv4.2`)
+	_, err := ParseHeaderFileVersion(`##fileformat=VFv4.2`)
 	c.Assert(err, ErrorMatches, "file format error.*")
 }
 
 func (s *VCFSuite) TestHeaderContigParse(c *C) {
-	m, err := parseHeaderContig(`##contig=<ID=20,length=62435964,assembly=B36,md5=f126cdf8a6e0c7f379d618ff66beb2da,species="Homo sapiens",taxonomy=x>`)
+	m, err := ParseHeaderContig(`##contig=<ID=20,length=62435964,assembly=B36,md5=f126cdf8a6e0c7f379d618ff66beb2da,species="Homo sapiens",taxonomy=x>`)
 	c.Assert(err, IsNil)
 	c.Assert(m, DeepEquals, map[string]string{"assembly": "B36", "md5": "f126cdf8a6e0c7f379d618ff66beb2da", "species": "\"Homo sapiens\"", "taxonomy": "x", "ID": "20", "length": "62435964"})
 }
 
 func (s *VCFSuite) TestHeaderExtra(c *C) {
-	obs, err := parseHeaderExtraKV("##key=value")
+	obs, err := ParseHeaderExtraKV("##key=value")
 	c.Assert(err, IsNil)
 	c.Assert(obs[0], Equals, "key")
 	c.Assert(obs[1], Equals, "value")
@@ -118,7 +118,7 @@ func (s *VCFSuite) TestHeaderExtra(c *C) {
 func (s *VCFSuite) TestHeaderSampleLine(c *C) {
 
 	for _, v := range samplelinetests {
-		r, err := parseSampleLine(v.line)
+		r, err := ParseSampleLine(v.line)
 		c.Assert(err, IsNil)
 		c.Assert(r, DeepEquals, v.exp)
 	}
