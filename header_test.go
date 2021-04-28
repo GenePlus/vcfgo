@@ -248,7 +248,6 @@ func TestParseHeaderContig(t *testing.T) {
 	assert.Equal(t, len(h.Contigs), 1)
 	assert.Equal(t, h.Contigs[0]["ID"], "1")
 }
-
 func TestGetContig(t *testing.T) {
 	h := vcfgo.NewHeader()
 	contigStr := `##contig=<ID=1,length=249250621>
